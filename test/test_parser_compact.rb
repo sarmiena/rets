@@ -1,4 +1,4 @@
-require "helper"
+require "test_helper"
 
 class TestParserCompact < Test::Unit::TestCase
   def test_parse_document_raises_on_invalid_delimiter

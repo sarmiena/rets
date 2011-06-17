@@ -1,4 +1,4 @@
-require "helper"
+require "test_helper"
 
 class TestParserMultipart < Test::Unit::TestCase
   def test_parse_returns_multiple_parts

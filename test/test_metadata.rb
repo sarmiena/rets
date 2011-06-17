@@ -1,4 +1,4 @@
-require "helper"
+require "test_helper"
 
 class TestMetadata < Test::Unit::TestCase
   def setup

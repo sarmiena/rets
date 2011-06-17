@@ -1,4 +1,4 @@
-require "helper"
+require "test_helper"
 
 class TestClient < Test::Unit::TestCase
 
@@ -568,4 +568,15 @@ DIGEST
     assert_equal "response", @client.retrieve_metadata_type("FOO")
   end
 
+  def test_count_return_only
+    response = Net::HTTPSuccess.new("","","")
+    response.stubs(:body => SAMPLE_COUNT, :get_fields => ["xxx"])
+    @client.expects(:raw_request).returns(response)
+
+    @client.stubs(:capability_url => URI.parse("/example"))
+
+    count = @client.count(:search_type => "Property", :class => "RES", :query => "x")
+
+    assert_equal 3000, count
+  end
 end
