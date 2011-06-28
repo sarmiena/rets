@@ -13,7 +13,7 @@ module Rets
     def initialize(options)
       @capabilities = nil
       @cookies      = nil
-      @metadata     = nil
+      @metadata     = Metadata::Root.new(self)
 
       uri          = URI.parse(options[:login_url])
 
@@ -204,14 +204,14 @@ module Rets
     end
 
     def metadata
-      return @metadata if @metadata
-
       if @cached_metadata && @cached_metadata.current?(capabilities["MetadataTimestamp"], capabilities["MetadataVersion"])
         self.metadata = @cached_metadata
-      else
-        metadata_fetcher = lambda { |type| retrieve_metadata_type(type) }
-        self.metadata = Metadata::Root.new(&metadata_fetcher)
       end
+      @metadata
+    end
+
+    def metadata_for(type)
+        @metadata.for(type)
     end
 
     def retrieve_metadata_type(type)

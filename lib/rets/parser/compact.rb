@@ -21,7 +21,6 @@ module Rets
         rows = doc.xpath("//DATA")
 
         rows.map.with_index do |data, i|
-          puts "## Processing record: #{i+1} (#{Time.now})" if i%500 == 0
           parse(data.text, delimiter)
         end
       end

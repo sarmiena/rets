@@ -1,6 +1,13 @@
 module Rets
   module Metadata
-    METADATA_TYPES = %w(SYSTEM RESOURCE CLASS TABLE LOOKUP LOOKUP_TYPE OBJECT)
+    METADATA_MAP = {:system => "SYSTEM",
+                    :resource => "RESOURCE",
+                    :class => "CLASS",
+                    :table => "TABLE",
+                    :lookup => "LOOKUP",
+                    :lookup_type => "LOOKUP_TYPE",
+                    :object => "OBJECT"}
+    METADATA_TYPES = METADATA_MAP.values
 
     # It's useful when dealing with the Rets standard to represent their
     # relatively flat namespace of interweived components as a Tree. With
@@ -49,21 +56,23 @@ module Rets
       # and the raw xml as the values
       attr_accessor :sources
 
-      # fetcher is a proc that inverts control to the client to retrieve metadata
-      # types
-      def initialize(&fetcher)
+      def initialize(client)
         @tree = nil
-        @metadata_types = nil # TODO think up a better name ... containers?
+        @metadata_types = {} # TODO think up a better name ... containers?
         @sources = {}
-
-        # allow Root's to be built with no fetcher. Makes for easy testing
-        return unless block_given?
-
-        fetch_sources(&fetcher)
+        @client = client
       end
 
-      def fetch_sources(&fetcher)
-        self.sources = Hash[*METADATA_TYPES.map {|type| [type, fetcher.call(type)] }.flatten]
+      def sources
+        @sources = fetch_sources
+      end
+
+      def fetch_sources
+        @fetch_sources ||= Hash[*METADATA_TYPES.map {|type| [type, @client.retrieve_metadata_type(type)] }.flatten]
+      end
+
+      def fetch_source_by_type(type)
+        self.sources[type] ||= @client.retrieve_metadata_type(type)
       end
 
       def marshal_dump
@@ -97,7 +106,7 @@ module Rets
       def build_tree
         tree = Hash.new { |h, k| h.key?(k.downcase) ? h[k.downcase] : nil }
 
-        resource_containers = metadata_types[:resource]
+        resource_containers = metadata_types
 
         resource_containers.each do |resource_container|
           resource_container.rows.each do |resource_fragment|
@@ -119,16 +128,34 @@ module Rets
         end
       end
 
+      # TODO: Implement other metadata queries
+      def for(type)
+        case type
+        when :lookup_type
+          get_lookup_types
+        else
+          raise "Not yet implemented!"
+        end
+      end
+
+      def get_lookup_types
+        type = METADATA_MAP[:lookup_type]
+        key = type.downcase.to_sym
+        @metadata_types[key] ||= metadata_type(fetch_source_by_type(type)).each_with_object({}) do |v, hash|
+          hash[v.lookup] = v
+        end
+      end
+
       def metadata_types
-        return @metadata_types if @metadata_types
-
-        h = {}
-
         sources.each do |name, source|
-          h[name.downcase.to_sym] = build_containers(Nokogiri.parse(source))
+          @metadata_types[name.downcase.to_sym] ||= metadata_type(source)
         end
 
-        @metadata_types = h
+        @metadata_types
+      end
+
+      def metadata_type(source)
+        build_containers(Nokogiri.parse(source))
       end
 
       # Returns an array of container classes that represents
@@ -147,7 +174,7 @@ module Rets
         class_name = type.capitalize.gsub(/_(\w)/) { $1.upcase }
         container_name = "#{class_name}Container"
 
-        container_class = Containers.constants.include?(container_name) ? Containers.const_get(container_name) : Containers::Container
+        container_class = Containers.constants.include?(container_name.to_sym) ? Containers.const_get(container_name) : Containers::Container
         container_class.new(fragment)
       end
     end
