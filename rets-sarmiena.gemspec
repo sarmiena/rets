@@ -21,6 +21,6 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   # s.add_development_dependency "rspec"
   s.add_runtime_dependency "mocha", "~>0.9.12"
-  s.add_runtime_dependency "nokogiri", "~>1.4.4"
+  s.add_runtime_dependency "nokogiri", "~>1.5.0"
   s.add_runtime_dependency "net-http-persistent", "~>1.7"
 end
