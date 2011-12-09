@@ -130,7 +130,7 @@ module Rets
 
       def for(metadata_key)
         raise "Unknown metatadata key '#{metadata_key}'" unless type = METADATA_MAP[metadata_key]
-        key = metadata_key.to_s.downcase.to_sym
+        key = METADATA_MAP[metadata_key]
         @metadata_types[key] ||= metadata_type(fetch_source_by_type(type)).each_with_object({}) do |v, hash|
           hash[v.lookup] = v
         end
