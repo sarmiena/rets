@@ -128,18 +128,8 @@ module Rets
         end
       end
 
-      # TODO: Implement other metadata queries
-      def for(type)
-        case type
-        when :lookup_type
-          get_lookup_types
-        else
-          raise "Not yet implemented!"
-        end
-      end
-
-      def get_lookup_types
-        type = METADATA_MAP[:lookup_type]
+      def for(metadata_key)
+        raise "Unknown metatadata key '#{metadata_key}'" unless type = METADATA_MAP[:lookup_type]
         key = type.downcase.to_sym
         @metadata_types[key] ||= metadata_type(fetch_source_by_type(type)).each_with_object({}) do |v, hash|
           hash[v.lookup] = v
