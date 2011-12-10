@@ -43,6 +43,10 @@ module Rets
 
       end
 
+      class SearchHelpContainer < RowContainer
+        alias search_help rows
+      end
+
       class ResourceContainer < RowContainer
         alias resources rows
       end

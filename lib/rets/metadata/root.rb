@@ -6,7 +6,8 @@ module Rets
                     :table => "TABLE",
                     :lookup => "LOOKUP",
                     :lookup_type => "LOOKUP_TYPE",
-                    :object => "OBJECT"}
+                    :object => "OBJECT",
+                    :search_help => "SEARCH_HELP"}
     METADATA_TYPES = METADATA_MAP.values
 
     # It's useful when dealing with the Rets standard to represent their
